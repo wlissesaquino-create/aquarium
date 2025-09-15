@@ -37,6 +37,8 @@ export function useAnimals() {
   }, []);
 
   const addAnimal = (type: AnimalType, name: string, image: string | null = null) => {
+    console.log('Adicionando animal:', { type, name, image: image ? 'Imagem presente' : 'Sem imagem' });
+    
     const newAnimal: Animal = {
       id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
       type,
@@ -55,6 +57,8 @@ export function useAnimals() {
     
     newAnimal.baseY = newAnimal.y;
     setAnimals(prev => [...prev, newAnimal]);
+    
+    console.log('Animal adicionado com sucesso:', newAnimal.id);
   };
 
   const getInitialY = (type: AnimalType): number => {

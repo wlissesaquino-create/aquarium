@@ -14,7 +14,7 @@ interface SeaweedPoint {
 }
 
 interface OceanBackgroundProps {
-  layer?: 'back' | 'front';
+  layer?: 'back' | 'front' | 'ground';
 }
 
 export function OceanBackground({ layer = 'back' }: OceanBackgroundProps) {
@@ -98,7 +98,7 @@ export function OceanBackground({ layer = 'back' }: OceanBackgroundProps) {
     };
 
     const drawSand = () => {
-      ctx.fillStyle = 'rgba(45, 35, 25, 1)';
+      ctx.fillStyle = layer === 'ground' ? 'rgba(45, 35, 25, 0.9)' : 'rgba(45, 35, 25, 1)';
       ctx.beginPath();
       ctx.moveTo(0, canvas.height);
       
@@ -139,13 +139,15 @@ export function OceanBackground({ layer = 'back' }: OceanBackgroundProps) {
     const animate = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       
-      if (layer === 'back') {
+      if (layer === 'back' || layer === 'ground') {
         drawOceanGradient();
       }
-      drawBubbles();
-      if (layer === 'back') {
+      
+      if (layer === 'back' || layer === 'ground') {
         drawSand();
       }
+      
+      drawBubbles();
       drawSeaweed();
       
       animationRef.current = requestAnimationFrame(animate);
@@ -167,7 +169,11 @@ export function OceanBackground({ layer = 'back' }: OceanBackgroundProps) {
   return (
     <canvas
       ref={canvasRef}
-      className={`fixed inset-0 w-full h-full pointer-events-none ${layer === 'back' ? 'z-0' : 'z-20'}`}
+      className={`fixed inset-0 w-full h-full pointer-events-none ${
+        layer === 'back' ? 'z-0' : 
+        layer === 'ground' ? 'z-5' : 
+        'z-20'
+      }`}
       style={{ background: 'linear-gradient(to bottom, #1e4678, #0a1e3c)' }}
     />
   );

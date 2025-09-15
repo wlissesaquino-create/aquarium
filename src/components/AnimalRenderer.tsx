@@ -59,7 +59,9 @@ export function AnimalRenderer({ animals }: AnimalRendererProps) {
         animal.visible = visibilityTimer < 25000;
 
         // Atualizar posição e visibilidade no DOM
-        animalElement.style.transform = `translate(${animal.x}px, ${animal.y}px) ${animal.direction < 0 ? 'scaleX(-1)' : 'scaleX(1)'}`;
+        animalElement.style.left = `${animal.x}px`;
+        animalElement.style.top = `${animal.y}px`;
+        animalElement.style.transform = animal.direction < 0 ? 'scaleX(-1)' : 'scaleX(1)';
         animalElement.style.opacity = animal.visible ? '1' : '0.3';
       });
 
@@ -76,6 +78,8 @@ export function AnimalRenderer({ animals }: AnimalRendererProps) {
   }, [animals]);
 
   const renderAnimalImage = (animal: Animal) => {
+    console.log('Renderizando animal:', animal.id, 'com imagem:', !!animal.image);
+    
     if (animal.image) {
       return (
         <div className="w-full h-full relative">
@@ -85,8 +89,10 @@ export function AnimalRenderer({ animals }: AnimalRendererProps) {
             className="w-full h-full object-contain opacity-95 drop-shadow-lg"
             style={{ 
               filter: 'brightness(1.1) contrast(1.1) saturate(1.2)',
-              imageRendering: 'crisp-edges'
+              imageRendering: 'auto'
             }}
+            onLoad={() => console.log('Imagem carregada:', animal.name)}
+            onError={(e) => console.error('Erro ao carregar imagem:', animal.name, e)}
           />
           {/* Efeito de brilho sutil */}
           <div className="absolute inset-0 bg-gradient-to-t from-transparent via-white/5 to-white/10 rounded-full pointer-events-none" />
@@ -114,10 +120,12 @@ export function AnimalRenderer({ animals }: AnimalRendererProps) {
           style={{
             width: `${animal.size}px`,
             height: `${animal.size}px`,
-            transform: `translate(${animal.x}px, ${animal.y}px)`,
+            left: `${animal.x}px`,
+            top: `${animal.y}px`,
             transformOrigin: 'center center',
             filter: 'drop-shadow(0 4px 8px rgba(0,0,0,0.3))',
-            zIndex: 10
+            zIndex: 10,
+            transform: animal.direction < 0 ? 'scaleX(-1)' : 'scaleX(1)'
           }}
         >
           {renderAnimalImage(animal)}
@@ -126,8 +134,7 @@ export function AnimalRenderer({ animals }: AnimalRendererProps) {
           <div
             className="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 px-3 py-1 bg-black/70 backdrop-blur-sm text-white text-sm rounded-full font-bold whitespace-nowrap border border-white/20 shadow-lg"
             style={{
-              textShadow: '2px 2px 4px rgba(0,0,0,0.9)',
-              transform: animal.direction < 0 ? 'translateX(-50%) scaleX(-1)' : 'translateX(-50%)'
+              textShadow: '2px 2px 4px rgba(0,0,0,0.9)'
             }}
           >
             {animal.name}

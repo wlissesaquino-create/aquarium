@@ -151,21 +151,21 @@ export function CameraCapture({ isOpen, onClose, onCapture, animalType }: Camera
     const finalName = animalName.trim() || getDefaultName();
     
     if (finalImage) {
-      // Criar um objeto com os dados necessários
+      // Criar um objeto JSON com os dados necessários
       const animalData = {
         image: finalImage,
         name: finalName,
         type: animalType
       };
       
-      onCapture(animalData as any);
+      console.log('Enviando dados da câmera:', animalData);
+      onCapture(JSON.stringify(animalData));
       
       // Reset todos os estados
       setCapturedImage(null);
       setProcessedImage(null);
       setShowNaming(false);
       setAnimalName('');
-      onClose();
     }
   };
 

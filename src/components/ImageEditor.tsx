@@ -74,9 +74,13 @@ export function ImageEditor({ isOpen, onClose, imageData, animalType, onConfirm 
   };
 
   const handleConfirm = () => {
+    console.log('Confirmando no ImageEditor:', { animalName, imageData: !!imageData, processedImage: !!processedImage });
+    
     if (imageData) {
       const finalImage = processedImage || imageData;
       const finalName = animalName.trim() || getDefaultName();
+      
+      console.log('Enviando para onConfirm:', { finalName, finalImage: finalImage.substring(0, 50) + '...' });
       onConfirm(finalName, finalImage);
       
       // Reset state

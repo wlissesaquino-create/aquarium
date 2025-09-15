@@ -64,13 +64,22 @@ function App() {
   };
 
   const handleCameraCapture = (imageData: string) => {
-    // imageData agora é um objeto com image, name e type
-    const animalData = imageData as any;
-    addAnimal(animalData.type, animalData.name, animalData.image);
+    try {
+      // imageData agora é um objeto com image, name e type
+      const animalData = JSON.parse(imageData);
+      console.log('Dados do animal da câmera:', animalData);
+      addAnimal(animalData.type, animalData.name, animalData.image);
+    } catch (error) {
+      console.error('Erro ao processar dados da câmera:', error);
+      // Fallback: tratar como string simples
+      addAnimal(selectedAnimalType, 'Animal da Câmera', imageData);
+    }
     setShowCamera(false);
   };
 
   const handleImageConfirm = async (name: string, processedImage: string) => {
+    console.log('Confirmando imagem:', { name, processedImage: processedImage.substring(0, 50) + '...' });
+    
     // Adicionar animal ao aquário
     addAnimal(selectedAnimalType, name, processedImage);
     
@@ -87,6 +96,11 @@ function App() {
     // Resetar estados
     setCapturedImage(null);
     setShowImageEditor(false);
+    
+    // Forçar re-render
+    setTimeout(() => {
+      window.location.reload();
+    }, 100);
   };
 
   const handleCloseModals = () => {
@@ -101,6 +115,9 @@ function App() {
     <div className="relative w-screen h-screen overflow-hidden font-nunito">
       {/* Fundo oceânico animado */}
       <OceanBackground layer="back" />
+      
+      {/* Chão do aquário */}
+      <OceanBackground layer="ground" />
       
       {/* Animais do aquário */}
       <AnimalRenderer animals={animals} />
