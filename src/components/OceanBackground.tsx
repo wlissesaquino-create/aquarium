@@ -13,7 +13,11 @@ interface SeaweedPoint {
   height: number;
 }
 
-export function OceanBackground() {
+interface OceanBackgroundProps {
+  layer?: 'back' | 'front';
+}
+
+export function OceanBackground({ layer = 'back' }: OceanBackgroundProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const animationRef = useRef<number>();
   const bubblesRef = useRef<Bubble[]>([]);
@@ -75,7 +79,7 @@ export function OceanBackground() {
     const drawBubbles = () => {
       bubblesRef.current.forEach(bubble => {
         ctx.save();
-        ctx.globalAlpha = bubble.opacity / 255;
+        ctx.globalAlpha = (bubble.opacity / 255) * (layer === 'front' ? 0.3 : 1);
         ctx.fillStyle = 'rgba(180, 220, 255, 0.8)';
         ctx.beginPath();
         ctx.arc(bubble.x, bubble.y, bubble.r, 0, Math.PI * 2);
@@ -108,7 +112,7 @@ export function OceanBackground() {
     };
 
     const drawSeaweed = () => {
-      ctx.strokeStyle = 'rgba(30, 80, 40, 0.8)';
+      ctx.strokeStyle = layer === 'front' ? 'rgba(30, 80, 40, 0.4)' : 'rgba(30, 80, 40, 0.8)';
       ctx.lineWidth = 3;
       ctx.lineCap = 'round';
 
@@ -135,9 +139,13 @@ export function OceanBackground() {
     const animate = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       
-      drawOceanGradient();
+      if (layer === 'back') {
+        drawOceanGradient();
+      }
       drawBubbles();
-      drawSand();
+      if (layer === 'back') {
+        drawSand();
+      }
       drawSeaweed();
       
       animationRef.current = requestAnimationFrame(animate);
@@ -159,7 +167,7 @@ export function OceanBackground() {
   return (
     <canvas
       ref={canvasRef}
-      className="fixed inset-0 w-full h-full pointer-events-none z-0"
+      className={`fixed inset-0 w-full h-full pointer-events-none ${layer === 'back' ? 'z-0' : 'z-20'}`}
       style={{ background: 'linear-gradient(to bottom, #1e4678, #0a1e3c)' }}
     />
   );

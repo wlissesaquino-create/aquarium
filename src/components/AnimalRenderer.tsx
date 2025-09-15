@@ -32,12 +32,24 @@ export function AnimalRenderer({ animals }: AnimalRendererProps) {
         }
 
         // Verificar bordas e inverter direção
-        if (animal.x > window.innerWidth + 150 || animal.x < -150) {
+        if (animal.x > window.innerWidth + 200 || animal.x < -200) {
           animal.direction *= -1;
-          animal.x = animal.direction > 0 ? -100 : window.innerWidth + 100;
+          animal.x = animal.direction > 0 ? -150 : window.innerWidth + 150;
+          
+          // Reposicionar Y baseado no tipo
+          const screenHeight = window.innerHeight;
+          const safeZoneTop = 100;
+          const safeZoneBottom = 150;
+          
+          if (animal.type === 'crab') {
+            animal.baseY = screenHeight - safeZoneBottom;
+          } else if (animal.type === 'jellyfish') {
+            animal.baseY = safeZoneTop + Math.random() * (screenHeight * 0.4);
+          } else {
+            animal.baseY = safeZoneTop + Math.random() * (screenHeight - safeZoneTop - safeZoneBottom);
+          }
           
           if (animal.type !== 'crab') {
-            animal.baseY = 100 + Math.random() * (window.innerHeight - 300);
             animal.y = animal.baseY;
           }
         }
@@ -93,18 +105,19 @@ export function AnimalRenderer({ animals }: AnimalRendererProps) {
   };
 
   return (
-    <div ref={containerRef} className="fixed inset-0 pointer-events-none z-10">
+    <div ref={containerRef} className="fixed inset-0 pointer-events-none z-10" style={{ zIndex: 10 }}>
       {animals.map(animal => (
         <div
           key={animal.id}
           id={`animal-${animal.id}`}
-          className="absolute transition-all duration-500"
+          className="absolute transition-opacity duration-500"
           style={{
             width: `${animal.size}px`,
             height: `${animal.size}px`,
             transform: `translate(${animal.x}px, ${animal.y}px)`,
             transformOrigin: 'center center',
-            filter: 'drop-shadow(0 4px 8px rgba(0,0,0,0.3))'
+            filter: 'drop-shadow(0 4px 8px rgba(0,0,0,0.3))',
+            zIndex: 10
           }}
         >
           {renderAnimalImage(animal)}

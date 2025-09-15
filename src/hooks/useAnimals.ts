@@ -43,12 +43,12 @@ export function useAnimals() {
       name: name.trim() || getDefaultName(type),
       image,
       birthTime: Date.now(),
-      x: Math.random() < 0.5 ? -100 : window.innerWidth + 100,
-      y: type === 'crab' ? window.innerHeight - 120 : 100 + Math.random() * (window.innerHeight - 300),
+      x: Math.random() < 0.5 ? -150 : window.innerWidth + 150,
+      y: getInitialY(type),
       baseY: 0,
       direction: Math.random() < 0.5 ? 1 : -1,
-      speed: 0.8 + Math.random() * 1.7,
-      size: 60 + Math.random() * 60,
+      speed: getSpeedForType(type),
+      size: getSizeForType(type),
       phase: Math.random() * Math.PI * 2,
       visible: true
     };
@@ -57,6 +57,48 @@ export function useAnimals() {
     setAnimals(prev => [...prev, newAnimal]);
   };
 
+  const getInitialY = (type: AnimalType): number => {
+    const screenHeight = window.innerHeight;
+    const safeZoneTop = 100; // Evitar o topo
+    const safeZoneBottom = 150; // Evitar o fundo (areia)
+    
+    switch (type) {
+      case 'crab':
+        // Caranguejos ficam no fundo, mas acima da areia
+        return screenHeight - safeZoneBottom;
+      case 'jellyfish':
+        // Águas-vivas ficam na parte superior-média
+        return safeZoneTop + Math.random() * (screenHeight * 0.4);
+      case 'fish':
+      default:
+        // Peixes ficam na zona média
+        return safeZoneTop + Math.random() * (screenHeight - safeZoneTop - safeZoneBottom);
+    }
+  };
+
+  const getSpeedForType = (type: AnimalType): number => {
+    switch (type) {
+      case 'crab':
+        return 0.3 + Math.random() * 0.7; // Mais lento
+      case 'jellyfish':
+        return 0.5 + Math.random() * 0.8; // Velocidade média
+      case 'fish':
+      default:
+        return 0.8 + Math.random() * 1.2; // Mais rápido
+    }
+  };
+
+  const getSizeForType = (type: AnimalType): number => {
+    switch (type) {
+      case 'crab':
+        return 50 + Math.random() * 40; // Menores
+      case 'jellyfish':
+        return 70 + Math.random() * 50; // Médias
+      case 'fish':
+      default:
+        return 60 + Math.random() * 60; // Variados
+    }
+  };
   const removeAnimal = (id: string) => {
     setAnimals(prev => prev.filter(animal => animal.id !== id));
   };

@@ -1,20 +1,29 @@
 import { useRef, useEffect, useState } from 'react';
-import { Camera, RotateCcw, Check, Scissors } from 'lucide-react';
+import { Camera, RotateCcw, Check, Scissors, Edit3 } from 'lucide-react';
 import { GlassModal } from './GlassModal';
 
 interface CameraCaptureProps {
   isOpen: boolean;
   onClose: () => void;
   onCapture: (imageData: string) => void;
+  animalType: string;
 }
 
-export function CameraCapture({ isOpen, onClose, onCapture }: CameraCaptureProps) {
+const animalNames = {
+  fish: 'Peixinho',
+  jellyfish: 'Água-viva',
+  crab: 'Caranguejo'
+};
+
+export function CameraCapture({ isOpen, onClose, onCapture, animalType }: CameraCaptureProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const [capturedImage, setCapturedImage] = useState<string | null>(null);
   const [processedImage, setProcessedImage] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [showNaming, setShowNaming] = useState(false);
+  const [animalName, setAnimalName] = useState('');
 
   useEffect(() => {
     if (isOpen && !capturedImage && !processedImage) {
@@ -134,27 +143,113 @@ export function CameraCapture({ isOpen, onClose, onCapture }: CameraCaptureProps
   };
 
   const confirmPhoto = () => {
+    setShowNaming(true);
+  };
+
+  const handleFinalConfirm = () => {
     const finalImage = processedImage || capturedImage;
+    const finalName = animalName.trim() || getDefaultName();
+    
     if (finalImage) {
-      onCapture(finalImage);
+      // Criar um objeto com os dados necessários
+      const animalData = {
+        image: finalImage,
+        name: finalName,
+        type: animalType
+      };
+      
+      onCapture(animalData as any);
+      
+      // Reset todos os estados
       setCapturedImage(null);
       setProcessedImage(null);
+      setShowNaming(false);
+      setAnimalName('');
       onClose();
     }
+  };
+
+  const getDefaultName = () => {
+    const defaultNames = {
+      fish: ['Nemo', 'Dory', 'Bubbles', 'Finn'],
+      jellyfish: ['Luna', 'Coral', 'Neptune', 'Jelly'],
+      crab: ['Sebastian', 'Sandy', 'Pincer', 'Scuttle']
+    };
+    
+    const names = defaultNames[animalType as keyof typeof defaultNames] || defaultNames.fish;
+    return names[Math.floor(Math.random() * names.length)];
   };
 
   const handleClose = () => {
     setCapturedImage(null);
     setProcessedImage(null);
+    setShowNaming(false);
+    setAnimalName('');
     stopCamera();
     onClose();
   };
 
+  // Se estiver na tela de nomeação
+  if (showNaming) {
+    return (
+      <GlassModal isOpen={isOpen} onClose={handleClose} className="w-[500px] p-6">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold text-white mb-4">
+            <Edit3 className="inline-block mr-2" size={24} />
+            Personalize seu {animalNames[animalType as keyof typeof animalNames]}
+          </h2>
+          
+          {/* Preview da imagem final */}
+          <div className="mb-6">
+            <img
+              src={processedImage || capturedImage || ''}
+              alt="Animal capturado"
+              className="w-full h-60 object-contain bg-gradient-to-br from-blue-500/20 to-purple-500/20 rounded-xl border-2 border-blue-400/40"
+            />
+          </div>
+          
+          {/* Campo nome */}
+          <div className="mb-6">
+            <label className="block text-white text-lg font-medium mb-2">
+              💫 Dê um nome especial ao seu {animalNames[animalType as keyof typeof animalNames]?.toLowerCase()}:
+            </label>
+            <input
+              type="text"
+              value={animalName}
+              onChange={(e) => setAnimalName(e.target.value)}
+              placeholder={`Ex: ${getDefaultName()}`}
+              className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/50 focus:bg-white/20 focus:border-blue-400/60 focus:outline-none transition-all duration-200 text-center text-lg font-medium"
+              maxLength={20}
+              autoFocus
+            />
+          </div>
+          
+          {/* Botões de ação */}
+          <div className="flex justify-center space-x-4">
+            <button
+              onClick={() => setShowNaming(false)}
+              className="px-8 py-3 bg-yellow-500/20 hover:bg-yellow-500/30 border border-yellow-400/40 rounded-xl text-white transition-all duration-200 hover:scale-105"
+            >
+              ⬅️ Voltar
+            </button>
+            
+            <button
+              onClick={handleFinalConfirm}
+              className="px-8 py-3 bg-green-500/20 hover:bg-green-500/30 border border-green-400/40 rounded-xl flex items-center space-x-2 text-white transition-all duration-200 hover:scale-105 font-medium"
+            >
+              <Check size={20} />
+              <span>🎉 Adicionar ao Aquário!</span>
+            </button>
+          </div>
+        </div>
+      </GlassModal>
+    );
+  }
   return (
     <GlassModal isOpen={isOpen} onClose={handleClose} className="w-[500px] p-6">
       <div className="text-center">
         <h2 className="text-xl font-bold text-white mb-4">
-          Capturar Foto
+          📸 Capturar {animalNames[animalType as keyof typeof animalNames]}
         </h2>
         
         <div className="relative mb-6">
@@ -237,8 +332,8 @@ export function CameraCapture({ isOpen, onClose, onCapture }: CameraCaptureProps
                 onClick={confirmPhoto}
                 className="px-6 py-3 bg-green-500/20 hover:bg-green-500/30 border border-green-400/40 rounded-full flex items-center space-x-2 text-white transition-colors duration-200"
               >
-                <Check size={20} />
-                <span>Confirmar</span>
+               <Edit3 size={20} />
+               <span>Continuar</span>
               </button>
             </>
           )}
@@ -246,4 +341,3 @@ export function CameraCapture({ isOpen, onClose, onCapture }: CameraCaptureProps
       </div>
     </GlassModal>
   );
-}

@@ -64,9 +64,10 @@ function App() {
   };
 
   const handleCameraCapture = (imageData: string) => {
-    setCapturedImage(imageData);
+    // imageData agora é um objeto com image, name e type
+    const animalData = imageData as any;
+    addAnimal(animalData.type, animalData.name, animalData.image);
     setShowCamera(false);
-    setShowImageEditor(true);
   };
 
   const handleImageConfirm = async (name: string, processedImage: string) => {
@@ -99,17 +100,19 @@ function App() {
   return (
     <div className="relative w-screen h-screen overflow-hidden font-nunito">
       {/* Fundo oceânico animado */}
-      <OceanBackground />
+      <OceanBackground layer="back" />
       
       {/* Animais do aquário */}
       <AnimalRenderer animals={animals} />
       
+      {/* Camada frontal do aquário */}
+      <OceanBackground layer="front" />
+      
       {/* Botões flutuantes */}
       <div className="fixed inset-0 z-30 pointer-events-none">
-        {/* Botão adicionar animal */}
         <button
           onClick={handleAddAnimal}
-          className="fixed top-6 left-6 w-14 h-14 bg-white/20 hover:bg-white/30 backdrop-blur-md border border-white/30 rounded-full flex items-center justify-center text-white shadow-lg transition-all duration-200 hover:scale-110 pointer-events-auto"
+          className="fixed top-6 left-6 w-14 h-14 bg-white/20 hover:bg-white/30 backdrop-blur-md border border-white/30 rounded-full flex items-center justify-center text-white shadow-lg transition-all duration-200 hover:scale-110 pointer-events-auto z-40"
         >
           <Plus size={24} />
         </button>
@@ -117,7 +120,7 @@ function App() {
         {/* Botão galeria */}
         <button
           onClick={() => setShowGallery(true)}
-          className="fixed bottom-6 right-6 w-14 h-14 bg-white/20 hover:bg-white/30 backdrop-blur-md border border-white/30 rounded-full flex items-center justify-center text-white shadow-lg transition-all duration-200 hover:scale-110 pointer-events-auto"
+          className="fixed bottom-6 right-6 w-14 h-14 bg-white/20 hover:bg-white/30 backdrop-blur-md border border-white/30 rounded-full flex items-center justify-center text-white shadow-lg transition-all duration-200 hover:scale-110 pointer-events-auto z-40"
         >
           <Camera size={24} />
         </button>
@@ -142,6 +145,7 @@ function App() {
         isOpen={showCamera}
         onClose={handleCloseModals}
         onCapture={handleCameraCapture}
+        animalType={selectedAnimalType}
       />
       
       <ImageEditor
