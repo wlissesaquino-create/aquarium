@@ -341,3 +341,4 @@ export function CameraCapture({ isOpen, onClose, onCapture, animalType }: Camera
       </div>
     </GlassModal>
   );
+}
