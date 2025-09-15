@@ -38,7 +38,13 @@ export function CameraCapture({ isOpen, onClose, onCapture }: CameraCaptureProps
       }
     } catch (error) {
       console.error('Erro ao acessar a câmera:', error);
-      alert('Não foi possível acessar a câmera. Verifique as permissões.');
+      
+      if (error instanceof Error && error.name === 'NotReadableError') {
+        alert('A câmera está sendo usada por outro aplicativo ou aba do navegador. Feche outros aplicativos que possam estar usando a câmera e tente novamente.');
+      } else {
+        alert('Não foi possível acessar a câmera. Verifique as permissões.');
+      }
+      
       onClose();
     }
   };
