@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Plus, Camera } from 'lucide-react';
 import { OceanBackground } from './components/OceanBackground';
-import { AnimalRenderer } from './components/AnimalRenderer';
+import { AquariumLayer, Fish } from './components/AquariumLayer';
 import { AnimalTypeSelector } from './components/AnimalTypeSelector';
 import { UploadMethodSelector } from './components/UploadMethodSelector';
 import { CameraCapture } from './components/CameraCapture';
@@ -13,6 +13,9 @@ import { processImageUpload, saveImageToDevice } from './utils/imageUtils';
 
 function App() {
   const { animals, addAnimal, removeAnimal, getTimeRemaining } = useAnimals();
+  
+  // Estado dos peixes para o aquário
+  const [fishList, setFishList] = useState<Fish[]>([]);
   
   // Estados dos modais
   const [showTypeSelector, setShowTypeSelector] = useState(false);
@@ -68,11 +71,31 @@ function App() {
       // imageData agora é um objeto com image, name e type
       const animalData = JSON.parse(imageData);
       console.log('Dados do animal da câmera:', animalData);
+      
+      // Adicionar ao sistema de animais (para galeria e controle de tempo)
       addAnimal(animalData.type, animalData.name, animalData.image);
+      
+      // Adicionar à lista de peixes nadando
+      const newFish: Fish = {
+        id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
+        src: animalData.image,
+        name: animalData.name,
+        type: animalData.type
+      };
+      setFishList(prev => [...prev, newFish]);
     } catch (error) {
       console.error('Erro ao processar dados da câmera:', error);
       // Fallback: tratar como string simples
-      addAnimal(selectedAnimalType, 'Animal da Câmera', imageData);
+      const defaultName = 'Animal da Câmera';
+      addAnimal(selectedAnimalType, defaultName, imageData);
+      
+      const newFish: Fish = {
+        id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
+        src: imageData,
+        name: defaultName,
+        type: selectedAnimalType
+      };
+      setFishList(prev => [...prev, newFish]);
     }
     setShowCamera(false);
   };
@@ -82,6 +105,15 @@ function App() {
     
     // Adicionar animal ao aquário
     addAnimal(selectedAnimalType, name, processedImage);
+    
+    // Adicionar à lista de peixes nadando
+    const newFish: Fish = {
+      id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
+      src: processedImage,
+      name: name,
+      type: selectedAnimalType
+    };
+    setFishList(prev => [...prev, newFish]);
     
     // Salvar imagem no dispositivo
     const success = await saveImageToDevice(
@@ -97,10 +129,7 @@ function App() {
     setCapturedImage(null);
     setShowImageEditor(false);
     
-    // Forçar re-render
-    setTimeout(() => {
-      window.location.reload();
-    }, 100);
+    console.log('Peixe adicionado à lista:', newFish);
   };
 
   const handleCloseModals = () => {
@@ -120,7 +149,7 @@ function App() {
       <OceanBackground layer="ground" />
       
       {/* Animais do aquário */}
-      <AnimalRenderer animals={animals} />
+      <AquariumLayer fishes={fishList} />
       
       {/* Camada frontal do aquário */}
       <OceanBackground layer="front" />
