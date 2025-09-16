@@ -145,14 +145,8 @@ function App() {
       {/* Fundo oceânico animado */}
       <OceanBackground layer="back" />
       
-      {/* Chão do aquário */}
-      <OceanBackground layer="ground" />
-      
       {/* Animais do aquário */}
       <AquariumLayer fishes={fishList} />
-      
-      {/* Camada frontal do aquário */}
-      <OceanBackground layer="front" />
       
       {/* Botões flutuantes */}
       <div className="fixed inset-0 z-30 pointer-events-none">
