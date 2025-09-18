@@ -9,82 +9,106 @@ export const AquariumBackground: React.FC = () => {
     let width = (canvas.width = window.innerWidth);
     let height = (canvas.height = window.innerHeight);
 
-    const groundHeight = 140;
-
-    // partículas (bolhas)
-    const bubbles = Array.from({ length: 60 }).map(() => ({
+    // Oceano - bolhas
+    const oceanBubbles = Array.from({ length: 60 }).map(() => ({
       x: Math.random() * width,
-      y: Math.random() * (height - groundHeight),
-      r: 2 + Math.random() * 6,
-      speed: 0.2 + Math.random() * 0.5,
-      drift: (Math.random() - 0.5) * 0.6,
-      opacity: 0.2 + Math.random() * 0.4,
+      y: Math.random() * height,
+      r: 4 + Math.random() * 8,
+      speed: 0.3 + Math.random() * 0.7,
+      opacity: 50 + Math.random() * 100,
     }));
 
-    const drawBackground = () => {
-      const grad = ctx.createLinearGradient(0, 0, 0, height);
-      grad.addColorStop(0, "#0d47a1");
-      grad.addColorStop(0.5, "#1976d2");
-      grad.addColorStop(1, "#64b5f6");
-      ctx.fillStyle = grad;
-      ctx.fillRect(0, 0, width, height);
+    // Areia do fundo - contorno irregular
+    const oceanSand = Array.from({ length: Math.ceil(width / 10) + 1 }).map(() => 
+      height - 80 - Math.random() * 40
+    );
+
+    // Função para interpolar cores (equivalente ao lerpColor do p5.js)
+    const lerpColor = (c1: [number, number, number], c2: [number, number, number], t: number): [number, number, number] => {
+      return [
+        c1[0] + (c2[0] - c1[0]) * t,
+        c1[1] + (c2[1] - c1[1]) * t,
+        c1[2] + (c2[2] - c1[2]) * t
+      ];
     };
 
-    const drawGround = () => {
-      const groundY = height - groundHeight;
-      ctx.fillStyle = "#4a3f35";
-      ctx.fillRect(0, groundY, width, groundHeight);
+    // Função para mapear valores (equivalente ao map do p5.js)
+    const mapValue = (value: number, start1: number, stop1: number, start2: number, stop2: number): number => {
+      return start2 + (stop2 - start2) * ((value - start1) / (stop1 - start1));
+    };
 
-      // pedras
-      for (let i = 0; i < 30; i++) {
-        const px = Math.random() * width;
-        const py = groundY + 20 + Math.random() * (groundHeight - 30);
-        const pr = 5 + Math.random() * 15;
+    const drawOcean = () => {
+      const c1: [number, number, number] = [20, 50, 100];
+      const c2: [number, number, number] = [10, 30, 60];
+      
+      // Desenhar gradiente linha por linha
+      for (let y = 0; y < height; y++) {
+        const inter = mapValue(y, 0, height, 0, 1);
+        const c = lerpColor(c1, c2, inter);
+        ctx.strokeStyle = `rgb(${Math.floor(c[0])}, ${Math.floor(c[1])}, ${Math.floor(c[2])})`;
         ctx.beginPath();
-        ctx.ellipse(px, py, pr * 1.3, pr, 0, 0, Math.PI * 2);
-        ctx.fillStyle = ["#5b4d42", "#3d332b", "#6c5a4e"][Math.floor(Math.random() * 3)];
-        ctx.fill();
-      }
-
-      // algas
-      for (let i = 0; i < 10; i++) {
-        const baseX = i * (width / 10) + Math.random() * 30;
-        const baseY = height - 10;
-        ctx.beginPath();
-        ctx.moveTo(baseX, baseY);
-        ctx.bezierCurveTo(
-          baseX - 20, baseY - 80,
-          baseX + 20, baseY - 140,
-          baseX + (Math.random() * 20 - 10), baseY - 180 - Math.random() * 50
-        );
-        ctx.strokeStyle = ["#1b8f3d", "#249e4f", "#1f8444"][Math.floor(Math.random() * 3)];
-        ctx.lineWidth = 6;
+        ctx.moveTo(0, y);
+        ctx.lineTo(width, y);
         ctx.stroke();
       }
-    };
 
-    const drawBubbles = () => {
-      for (let b of bubbles) {
+      // Desenhar bolhas
+      for (let bubble of oceanBubbles) {
+        ctx.fillStyle = `rgba(180, 220, 255, ${bubble.opacity / 255})`;
         ctx.beginPath();
-        ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(255,255,255,${b.opacity})`;
+        ctx.arc(bubble.x, bubble.y, bubble.r, 0, Math.PI * 2);
         ctx.fill();
-
-        b.y -= b.speed;
-        b.x += b.drift;
-
-        if (b.y < 0) {
-          b.y = height - groundHeight - 5;
-          b.x = Math.random() * width;
+        
+        bubble.y -= bubble.speed;
+        bubble.x += Math.sin(bubble.y * 0.01) * 0.5;
+        
+        if (bubble.y < -20) {
+          bubble.y = height + 20;
+          bubble.x = Math.random() * width;
         }
       }
+
+      // Desenhar areia do fundo
+      ctx.fillStyle = "rgb(45, 35, 25)";
+      ctx.beginPath();
+      ctx.moveTo(0, height);
+      for (let i = 0; i < oceanSand.length; i++) {
+        ctx.lineTo(i * 10, oceanSand[i]);
+      }
+      ctx.lineTo(width, height);
+      ctx.closePath();
+      ctx.fill();
+
+      drawSeaweed();
+    };
+
+    const drawSeaweed = () => {
+      ctx.strokeStyle = "rgb(30, 80, 40)";
+      ctx.lineWidth = 3;
+      
+      for (let x = 100; x < width; x += 200) {
+        const baseY = height - 60;
+        const waveOffset = Math.sin(Date.now() * 0.001 + x * 0.01) * 10;
+        
+        ctx.beginPath();
+        let firstPoint = true;
+        for (let y = baseY; y > baseY - 150; y -= 10) {
+          const offsetX = Math.sin((y - baseY) * 0.05 + Date.now() * 0.002) * 15 + waveOffset;
+          if (firstPoint) {
+            ctx.moveTo(x + offsetX, y);
+            firstPoint = false;
+          } else {
+            ctx.lineTo(x + offsetX, y);
+          }
+        }
+        ctx.stroke();
+      }
+      ctx.lineWidth = 1;
     };
 
     const animate = () => {
       ctx.clearRect(0, 0, width, height);
-      drawBackground();
-      drawGround();
-      drawBubbles();
+      drawOcean();
       requestAnimationFrame(animate);
     };
 
@@ -93,7 +117,13 @@ export const AquariumBackground: React.FC = () => {
     const handleResize = () => {
       width = canvas.width = window.innerWidth;
       height = canvas.height = window.innerHeight;
+      // Recriar areia com nova largura
+      oceanSand.length = Math.ceil(width / 10) + 1;
+      for (let i = 0; i < oceanSand.length; i++) {
+        oceanSand[i] = height - 80 - Math.random() * 40;
+      }
     };
+    
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
