@@ -11,19 +11,12 @@ interface AnimalGalleryProps {
 }
 
 export function AnimalGallery({ isOpen, onClose, animals, onRemoveAnimal, getTimeRemaining }: AnimalGalleryProps) {
-  const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
-
   if (!isOpen) return null;
 
   const formatTime = (ms: number): string => {
     const minutes = Math.floor(ms / 60000);
     const seconds = Math.floor((ms % 60000) / 1000);
     return `${minutes}:${seconds.toString().padStart(2, '0')}`;
-  };
-
-  const handleDelete = (animalId: string) => {
-    onRemoveAnimal(animalId);
-    setDeleteConfirm(null);
   };
 
   const getAnimalIcon = (type: string) => {
@@ -95,7 +88,7 @@ export function AnimalGallery({ isOpen, onClose, animals, onRemoveAnimal, getTim
                       </div>
                       
                       <button
-                        onClick={() => setDeleteConfirm(animal.id)}
+                        onClick={() => onRemoveAnimal(animal.id)}
                         className="w-8 h-8 bg-red-500/20 hover:bg-red-500/30 border border-red-400/40 rounded-full flex items-center justify-center text-red-400 hover:text-red-300 transition-colors duration-200"
                       >
                         <Trash2 size={14} />
@@ -108,39 +101,6 @@ export function AnimalGallery({ isOpen, onClose, animals, onRemoveAnimal, getTim
           )}
         </div>
       </div>
-      
-      {/* Delete Confirmation Modal */}
-      {deleteConfirm && (
-        <div className="fixed inset-0 z-60 flex items-center justify-center">
-          <div className="fixed inset-0 bg-black/50" onClick={() => setDeleteConfirm(null)} />
-          <div className="relative bg-white/10 backdrop-blur-md border border-white/20 rounded-3xl p-6 max-w-sm mx-4">
-            <div className="text-center">
-              <div className="text-4xl mb-4">😢</div>
-              <h3 className="text-xl font-bold text-white mb-2">
-                Tem certeza?
-              </h3>
-              <p className="text-white/80 mb-6">
-                Você quer mesmo excluir este animal do aquário?
-              </p>
-              
-              <div className="flex space-x-4">
-                <button
-                  onClick={() => setDeleteConfirm(null)}
-                  className="flex-1 py-3 bg-gray-500/20 hover:bg-gray-500/30 border border-gray-400/40 rounded-xl text-white transition-colors duration-200"
-                >
-                  Cancelar
-                </button>
-                <button
-                  onClick={() => handleDelete(deleteConfirm)}
-                  className="flex-1 py-3 bg-red-500/20 hover:bg-red-500/30 border border-red-400/40 rounded-xl text-white transition-colors duration-200"
-                >
-                  Excluir
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
     </>
   );
 }

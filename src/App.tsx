@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Plus, Camera } from 'lucide-react';
-import { OceanBackground } from './components/OceanBackground';
+import { AquariumBackground } from './components/AquariumBackground';
 import { AquariumLayer, Fish } from './components/AquariumLayer';
 import { AnimalTypeSelector } from './components/AnimalTypeSelector';
 import { UploadMethodSelector } from './components/UploadMethodSelector';
@@ -199,8 +199,8 @@ function App() {
 
   return (
     <div className="relative w-screen h-screen overflow-hidden font-nunito">
-      {/* Fundo oceânico animado */}
-      <OceanBackground layer="back" />
+      {/* Fundo oceânico desenhado em canvas */}
+      <AquariumBackground />
       
       {/* Animais do aquário */}
       <AquariumLayer fishes={fishList} />
