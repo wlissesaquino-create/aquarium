@@ -6,6 +6,11 @@ export interface Fish {
   src: string;
   name: string;
   type: string;
+  x?: number;
+  y?: number;
+  direction?: number;
+  size?: number;
+  speed?: number;
 }
 
 interface AquariumLayerProps {

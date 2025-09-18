@@ -75,12 +75,31 @@ function App() {
       // Adicionar ao sistema de animais (para galeria e controle de tempo)
       addAnimal(animalData.type, animalData.name, animalData.image);
       
-      // Adicionar à lista de peixes nadando
+      // Adicionar à lista de peixes nadando com parâmetros aleatórios
+      const groundHeight = 120;
+      const fromLeft = Math.random() < 0.5;
+      const direction = fromLeft ? 1 : -1;
+      const size = 80 + Math.random() * 140; // 80-220px
+      
+      let initialY: number;
+      if (animalData.type === 'crab') {
+        initialY = window.innerHeight * 0.67 + Math.random() * (window.innerHeight * 0.33 - groundHeight - 20);
+      } else if (animalData.type === 'jellyfish') {
+        initialY = 60 + Math.random() * (window.innerHeight * 0.6 - 60);
+      } else {
+        initialY = 60 + Math.random() * (window.innerHeight - groundHeight - 210);
+      }
+      
       const newFish: Fish = {
         id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
         src: animalData.image,
         name: animalData.name,
-        type: animalData.type
+        type: animalData.type,
+        x: fromLeft ? -size - 50 : window.innerWidth + size + 50,
+        y: initialY,
+        direction,
+        size,
+        speed: (0.6 + Math.random() * 2.0) * (120 / size)
       };
       setFishList(prev => [...prev, newFish]);
     } catch (error) {
@@ -89,11 +108,30 @@ function App() {
       const defaultName = 'Animal da Câmera';
       addAnimal(selectedAnimalType, defaultName, imageData);
       
+      const groundHeight = 120;
+      const fromLeft = Math.random() < 0.5;
+      const direction = fromLeft ? 1 : -1;
+      const size = 80 + Math.random() * 140;
+      
+      let initialY: number;
+      if (selectedAnimalType === 'crab') {
+        initialY = window.innerHeight * 0.67 + Math.random() * (window.innerHeight * 0.33 - groundHeight - 20);
+      } else if (selectedAnimalType === 'jellyfish') {
+        initialY = 60 + Math.random() * (window.innerHeight * 0.6 - 60);
+      } else {
+        initialY = 60 + Math.random() * (window.innerHeight - groundHeight - 210);
+      }
+      
       const newFish: Fish = {
         id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
         src: imageData,
         name: defaultName,
-        type: selectedAnimalType
+        type: selectedAnimalType,
+        x: fromLeft ? -size - 50 : window.innerWidth + size + 50,
+        y: initialY,
+        direction,
+        size,
+        speed: (0.6 + Math.random() * 2.0) * (120 / size)
       };
       setFishList(prev => [...prev, newFish]);
     }
@@ -107,11 +145,30 @@ function App() {
     addAnimal(selectedAnimalType, name, processedImage);
     
     // Adicionar à lista de peixes nadando
+    const groundHeight = 120;
+    const fromLeft = Math.random() < 0.5;
+    const direction = fromLeft ? 1 : -1;
+    const size = 80 + Math.random() * 140; // 80-220px
+    
+    let initialY: number;
+    if (selectedAnimalType === 'crab') {
+      initialY = window.innerHeight * 0.67 + Math.random() * (window.innerHeight * 0.33 - groundHeight - 20);
+    } else if (selectedAnimalType === 'jellyfish') {
+      initialY = 60 + Math.random() * (window.innerHeight * 0.6 - 60);
+    } else {
+      initialY = 60 + Math.random() * (window.innerHeight - groundHeight - 210);
+    }
+    
     const newFish: Fish = {
       id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
       src: processedImage,
       name: name,
-      type: selectedAnimalType
+      type: selectedAnimalType,
+      x: fromLeft ? -size - 50 : window.innerWidth + size + 50,
+      y: initialY,
+      direction,
+      size,
+      speed: (0.6 + Math.random() * 2.0) * (120 / size)
     };
     setFishList(prev => [...prev, newFish]);
     

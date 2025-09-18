@@ -4,8 +4,10 @@ interface Bubble {
   x: number;
   y: number;
   r: number;
-  speed: number;
+  speedY: number;
+  driftX: number;
   opacity: number;
+  seed: number;
 }
 
 interface OceanBackgroundProps {
@@ -30,15 +32,29 @@ export function OceanBackground({ layer = 'back' }: OceanBackgroundProps) {
       initializeBubbles();
     };
 
+    const getGroundTop = (): number => {
+      // Try to get ground element height, fallback to 120px
+      const groundElement = document.querySelector('.ocean-ground');
+      if (groundElement) {
+        const rect = groundElement.getBoundingClientRect();
+        return rect.top;
+      }
+      return canvas.height - 120; // fallback
+    };
+
     const initializeBubbles = () => {
+      const groundTop = getGroundTop();
       bubblesRef.current = [];
-      for (let i = 0; i < 50; i++) {
+      
+      for (let i = 0; i < 60; i++) {
         bubblesRef.current.push({
           x: Math.random() * canvas.width,
-          y: Math.random() * canvas.height,
+          y: Math.random() * (groundTop - 8),
           r: 2 + Math.random() * 6,
-          speed: 0.5 + Math.random() * 1.5,
-          opacity: 0.3 + Math.random() * 0.4
+          speedY: 0.05 + Math.random() * 0.55,
+          driftX: (Math.random() - 0.5) * 2.4, // -1.2 to +1.2
+          opacity: 0.15 + Math.random() * 0.4,
+          seed: Math.random() * 1000
         });
       }
     };
@@ -78,6 +94,9 @@ export function OceanBackground({ layer = 'back' }: OceanBackgroundProps) {
     };
 
     const drawBubbles = () => {
+      const groundTop = getGroundTop();
+      const currentTime = Date.now();
+      
       bubblesRef.current.forEach(bubble => {
         ctx.save();
         ctx.globalAlpha = bubble.opacity;
@@ -87,13 +106,19 @@ export function OceanBackground({ layer = 'back' }: OceanBackgroundProps) {
         ctx.fill();
         ctx.restore();
 
-        // Movimento das bolhas
-        bubble.y -= bubble.speed;
-        bubble.x += Math.sin(bubble.y * 0.01) * 0.5;
+        // Movimento das bolhas - muito mais lento
+        bubble.y -= bubble.speedY;
+        bubble.x += Math.sin((currentTime + bubble.seed) / 2000) * (bubble.driftX * 0.3);
 
-        if (bubble.y < -20) {
-          bubble.y = canvas.height + 20;
+        // Reposicionar se sair da área válida
+        if (bubble.y < -10) {
+          bubble.y = groundTop - 10;
           bubble.x = Math.random() * canvas.width;
+        }
+        
+        // Garantir que não invada o chão
+        if (bubble.y >= groundTop - 4) {
+          bubble.y = groundTop - (10 + Math.random() * 30);
         }
       });
     };
