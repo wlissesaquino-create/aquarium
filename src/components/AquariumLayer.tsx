@@ -158,7 +158,7 @@ export function AquariumLayer({ fishes }: AquariumLayerProps) {
           s.fill(255);
           s.stroke(0);
           s.strokeWeight(2);
-          s.text(animal.name, animal.x + animal.size/2, animal.y + animal.size + 4);
+          s.text(animal.name, animal.x + animal.size/2, animal.y + animal.size/2 + 20);
           s.noStroke();
           
           // Respawn se saiu da tela
