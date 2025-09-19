@@ -95,7 +95,7 @@ export function AquariumLayer({ fishes }: AquariumLayerProps) {
                   y: item.y || getInitialY(item.type),
                   baseY: item.y || getInitialY(item.type),
                   direction: item.direction || (Math.random() < 0.5 ? 1 : -1),
-                  size: 100, // Tamanho fixo
+                  size: 150, // Tamanho fixo
                   speed: item.speed || getSpeedForType(item.type),
                   phase: Math.random() * Math.PI * 2,
                   birth: Date.now()
