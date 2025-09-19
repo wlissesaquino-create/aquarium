@@ -157,6 +157,7 @@ export function AquariumLayer({ fishes }: AquariumLayerProps) {
           // Desenhar nome (sempre legível, nunca espelhado)
           s.fill(255);
           s.stroke(0);
+          s.textAlign(s.CENTER, s.TOP);
           s.strokeWeight(2);
           s.text(animal.name, animal.x + animal.size/2, animal.y + animal.size + 16);
           s.noStroke();
