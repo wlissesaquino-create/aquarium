@@ -207,7 +207,7 @@ export function AquariumLayer({ fishes }: AquariumLayerProps) {
       const cleanupExpiredAnimals = () => {
         const now = Date.now();
         // --- PONTO DE AJUSTE DE TEMPO DE VIDA ---
-        const LIFETIME = 10 * 60 * 1000; // 10 minutos
+        const LIFETIME = 7 * 60 * 1000; // 7 minutos
 
         sketchAnimalsRef.current = sketchAnimalsRef.current.filter(animal => {
           const expired = now - animal.birth > LIFETIME;
