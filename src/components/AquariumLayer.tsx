@@ -74,7 +74,7 @@ export function AquariumLayer({ fishes }: AquariumLayerProps) {
         for (const item of toAdd) {
           if (item.src) {
             // --- PONTO DE AJUSTE DE TAMANHO ---
-            const fishWidth = 160; // Altere este valor para ajustar o tamanho dos animais
+            const fishWidth = 165; // Altere este valor para ajustar o tamanho dos animais
             const fishHeight = (fishWidth * 9) / 16;
 
             s.loadImage(
