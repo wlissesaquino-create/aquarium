@@ -77,7 +77,7 @@ export function AquariumLayer({ fishes }: AquariumLayerProps) {
           
           if (item.src) {
             // ALTERADO: Definimos as dimensões aqui
-            const fishWidth = 80; // Largura base, ajuste como quiser
+            const fishWidth = 160; // Largura base, ajuste como quiser
             const fishHeight = (fishWidth * 9) / 16; // Altura calculada para proporção 16:9
 
             s.loadImage(
