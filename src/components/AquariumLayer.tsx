@@ -9,7 +9,7 @@ export interface Fish {
   x?: number;
   y?: number;
   direction?: number;
-  size?: number; // Esta interface pode manter o 'size', pois ele não é usado internamente
+  size?: number;
   speed?: number;
 }
 
@@ -17,7 +17,7 @@ interface AquariumLayerProps {
   fishes: Fish[];
 }
 
-// Interface para os animais que o p5.js vai desenhar
+// Interface interna para os animais que o p5.js vai desenhar
 interface SketchAnimal {
   id: string;
   name: string;
@@ -27,8 +27,8 @@ interface SketchAnimal {
   y: number;
   baseY: number;
   direction: number;
-  width: number;  // ALTERADO: de 'size' para 'width'
-  height: number; // ALTERADO: adicionado 'height'
+  width: number;
+  height: number;
   speed: number;
   phase: number;
   birth: number;
@@ -51,7 +51,6 @@ export function AquariumLayer({ fishes }: AquariumLayerProps) {
           canvas.parent(canvasRef.current);
           s.textAlign(s.CENTER, s.CENTER);
           s.textSize(12);
-          console.log('p5 sketch inicializado');
         };
 
         s.draw = () => {
@@ -73,17 +72,14 @@ export function AquariumLayer({ fishes }: AquariumLayerProps) {
       const consumePending = (s: any) => {
         const toAdd = pendingAddsRef.current.splice(0);
         for (const item of toAdd) {
-          console.log('Carregando imagem para animal:', item.id);
-          
           if (item.src) {
-            // ALTERADO: Definimos as dimensões aqui
-            const fishWidth = 160; // Largura base, ajuste como quiser
-            const fishHeight = (fishWidth * 9) / 16; // Altura calculada para proporção 16:9
+            // --- PONTO DE AJUSTE DE TAMANHO ---
+            const fishWidth = 160; // Altere este valor para ajustar o tamanho dos animais
+            const fishHeight = (fishWidth * 9) / 16;
 
             s.loadImage(
               item.src,
               (img: any) => {
-                console.log('p5.loadImage sucesso para:', item.id);
                 const animal: SketchAnimal = {
                   id: item.id,
                   name: item.name,
@@ -93,8 +89,8 @@ export function AquariumLayer({ fishes }: AquariumLayerProps) {
                   y: item.y || getInitialY(item.type),
                   baseY: item.y || getInitialY(item.type),
                   direction: item.direction || (Math.random() < 0.5 ? 1 : -1),
-                  width: fishWidth,    // ALTERADO
-                  height: fishHeight,  // ALTERADO
+                  width: fishWidth,
+                  height: fishHeight,
                   speed: item.speed || getSpeedForType(item.type),
                   phase: Math.random() * Math.PI * 2,
                   birth: Date.now()
@@ -103,7 +99,7 @@ export function AquariumLayer({ fishes }: AquariumLayerProps) {
                 sketchAnimalsRef.current.push(animal);
               },
               (err: any) => {
-                console.warn('p5.loadImage falhou para:', item.id, err);
+                console.warn(`p5.loadImage falhou para: ${item.name} (${item.id})`, err);
                 const animal: SketchAnimal = {
                   id: item.id,
                   name: item.name,
@@ -113,8 +109,8 @@ export function AquariumLayer({ fishes }: AquariumLayerProps) {
                   y: item.y || getInitialY(item.type),
                   baseY: item.y || getInitialY(item.type),
                   direction: item.direction || (Math.random() < 0.5 ? 1 : -1),
-                  width: fishWidth,   // ALTERADO
-                  height: fishHeight, // ALTERADO
+                  width: fishWidth,
+                  height: fishHeight,
                   speed: item.speed || getSpeedForType(item.type),
                   phase: Math.random() * Math.PI * 2,
                   birth: Date.now()
@@ -143,7 +139,6 @@ export function AquariumLayer({ fishes }: AquariumLayerProps) {
           }
           
           if (animal.p5img) {
-            // ALTERADO: Usamos width e height para desenhar a imagem
             s.image(animal.p5img, 0, 0, animal.width, animal.height);
           } else {
             drawPlaceholder(s, animal);
@@ -154,11 +149,9 @@ export function AquariumLayer({ fishes }: AquariumLayerProps) {
           s.fill(255);
           s.stroke(0);
           s.strokeWeight(2);
-          // ALTERADO: Posição do nome baseada em width e height
           s.text(animal.name, animal.x + animal.width / 2, animal.y + animal.height + 15);
           s.noStroke();
           
-          // ALTERADO: Buffer de respawn baseado na largura
           const buffer = animal.width + 200;
           if (animal.x < -buffer || animal.x > window.innerWidth + buffer) {
             respawnAnimal(animal);
@@ -174,18 +167,15 @@ export function AquariumLayer({ fishes }: AquariumLayerProps) {
             animal.x += animal.speed * animal.direction;
             animal.y = animal.baseY + Math.sin(t * 0.8 + animal.phase) * 8;
             break;
-            
           case 'jellyfish':
             animal.x += animal.speed * animal.direction;
             animal.y = animal.baseY + Math.sin(t * 0.6 + animal.phase) * 20;
             animal.x += Math.sin(t * 1.2 + animal.phase * 2) * 0.8;
             break;
-            
           case 'crab':
             animal.x += animal.speed * animal.direction;
             animal.y = animal.baseY + Math.sin(t * 8 + animal.phase) * 3;
             break;
-            
           default:
             animal.x += animal.speed * animal.direction;
             break;
@@ -196,20 +186,17 @@ export function AquariumLayer({ fishes }: AquariumLayerProps) {
         s.fill(100, 150, 255, 100);
         s.stroke(255);
         s.strokeWeight(2);
-        // ALTERADO: Desenha o retângulo com width e height corretos
         s.rect(0, 0, animal.width, animal.height);
         s.fill(255);
         s.noStroke();
         s.textAlign(s.CENTER, s.CENTER);
-        // ALTERADO: Centraliza o texto no novo retângulo
-        s.text('?', animal.width / 2, animal.height / 2 + 20);
+        s.text('?', animal.width / 2, animal.height / 2);
         s.textAlign(s.CENTER, s.CENTER);
       };
 
       const respawnAnimal = (animal: SketchAnimal) => {
         const fromLeft = Math.random() < 0.5;
         animal.direction = fromLeft ? 1 : -1;
-        // ALTERADO: Posição de respawn usa a largura do animal
         animal.x = fromLeft ? -animal.width - 50 : window.innerWidth + animal.width + 50;
         animal.y = getInitialY(animal.type);
         animal.baseY = animal.y;
@@ -219,12 +206,13 @@ export function AquariumLayer({ fishes }: AquariumLayerProps) {
 
       const cleanupExpiredAnimals = () => {
         const now = Date.now();
-        const LIFETIME = 5 * 60 * 1000;
-        
+        // --- PONTO DE AJUSTE DE TEMPO DE VIDA ---
+        const LIFETIME = 10 * 60 * 1000; // 10 minutos
+
         sketchAnimalsRef.current = sketchAnimalsRef.current.filter(animal => {
           const expired = now - animal.birth > LIFETIME;
           if (expired) {
-            console.log('Removendo animal expirado:', animal.id);
+            console.log(`Removendo animal expirado: ${animal.name} (${animal.id})`);
             if (animal.p5img && typeof animal.p5img.remove === 'function') {
               animal.p5img.remove();
             }
@@ -277,19 +265,34 @@ export function AquariumLayer({ fishes }: AquariumLayerProps) {
     };
   }, []);
 
+  // --- O PONTO PRINCIPAL DA CORREÇÃO: SINCRONIZAÇÃO COMPLETA ---
   useEffect(() => {
-    if (!fishes || fishes.length === 0) return;
-    
-    console.log('Sincronizando peixes com sketch:', fishes.length);
-    
-    const existingIds = new Set(sketchAnimalsRef.current.map(a => a.id));
-    const newFishes = fishes.filter(fish => !existingIds.has(fish.id));
-    
-    if (newFishes.length > 0) {
-      console.log('Adicionando à fila de pendências:', newFishes.length, 'novos peixes');
-      pendingAddsRef.current.push(...newFishes);
+    if (!p5Instance) {
+      return;
     }
-  }, [fishes]);
+
+    const currentAnimalIds = new Set(sketchAnimalsRef.current.map(a => a.id));
+    const desiredFishIds = new Set(fishes.map(f => f.id));
+
+    // LÓGICA DE REMOÇÃO:
+    const animalsToRemove = sketchAnimalsRef.current.filter(animal => !desiredFishIds.has(animal.id));
+    if (animalsToRemove.length > 0) {
+      console.log(`%cRemovendo ${animalsToRemove.length} peixe(s) via sync:`, 'color: orange;', animalsToRemove.map(a => a.name));
+      animalsToRemove.forEach(animal => {
+        if (animal.p5img && typeof animal.p5img.remove === 'function') {
+          animal.p5img.remove();
+        }
+      });
+      sketchAnimalsRef.current = sketchAnimalsRef.current.filter(animal => desiredFishIds.has(animal.id));
+    }
+
+    // LÓGICA DE ADIÇÃO:
+    const newFishesToAdd = fishes.filter(fish => !currentAnimalIds.has(fish.id));
+    if (newFishesToAdd.length > 0) {
+      console.log(`%cAdicionando ${newFishesToAdd.length} novo(s) peixe(s) via sync:`, 'color: cyan;', newFishesToAdd.map(f => f.name));
+      pendingAddsRef.current.push(...newFishesToAdd);
+    }
+  }, [fishes, p5Instance]);
 
   return (
     <div className="fixed inset-0 pointer-events-none z-10 overflow-hidden">
