@@ -202,7 +202,7 @@ export function AquariumLayer({ fishes }: AquariumLayerProps) {
         s.noStroke();
         s.textAlign(s.CENTER, s.CENTER);
         // ALTERADO: Centraliza o texto no novo retângulo
-        s.text('?', animal.width / 2, animal.height / 2);
+        s.text('?', animal.width / 2, animal.height / 2 + 20);
         s.textAlign(s.CENTER, s.CENTER);
       };
 
