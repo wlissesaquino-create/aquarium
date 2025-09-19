@@ -48,14 +48,47 @@ export function CameraCapture({ isOpen, onClose, onCapture, animalType }: Camera
     } catch (error) {
       console.error('Erro ao acessar a câmera:', error);
       
-      if (error instanceof Error && error.name === 'NotReadableError') {
-        alert('A câmera está sendo usada por outro aplicativo ou aba do navegador. Feche outros aplicativos que possam estar usando a câmera e tente novamente.');
-      } else {
-        alert('Não foi possível acessar a câmera. Verifique as permissões.');
-      }
-      
-      onClose();
+      handleCameraError(error);
     }
+  };
+
+  const handleCameraError = async (error: any) => {
+    if (error instanceof Error && error.name === 'NotReadableError') {
+      // Câmera em uso por outro app
+      const shouldRetry = confirm(
+        'A câmera está sendo usada por outro aplicativo. ' +
+        'Feche outros aplicativos que usam a câmera e clique OK para tentar novamente, ' +
+        'ou Cancelar para usar upload de arquivo.'
+      );
+      
+      if (shouldRetry) {
+        // Tentar novamente após 2 segundos
+        setTimeout(() => {
+          startCamera();
+        }, 2000);
+        return;
+      } else {
+        // Fallback para upload
+        alert('Redirecionando para upload de arquivo...');
+        onClose();
+        // Aqui poderia chamar um callback para abrir o upload
+        return;
+      }
+    } else if (error instanceof Error && error.name === 'NotAllowedError') {
+      alert('Permissão de câmera negada. Verifique as configurações do navegador.');
+    } else {
+      alert('Não foi possível acessar a câmera. Tente usar upload de arquivo.');
+    }
+    
+    // Enumerar dispositivos para diagnóstico
+    try {
+      const devices = await navigator.mediaDevices.enumerateDevices();
+      console.log('Dispositivos disponíveis:', devices);
+    } catch (enumError) {
+      console.error('Erro ao enumerar dispositivos:', enumError);
+    }
+    
+    onClose();
   };
 
   const stopCamera = () => {
@@ -72,11 +105,21 @@ export function CameraCapture({ isOpen, onClose, onCapture, animalType }: Camera
     if (video && canvas) {
       const ctx = canvas.getContext('2d');
       if (ctx) {
-        canvas.width = video.videoWidth;
-        canvas.height = video.videoHeight;
+        // Limitar tamanho para evitar problemas de memória
+        const maxSize = 1024;
+        const videoAspect = video.videoWidth / video.videoHeight;
         
-        ctx.drawImage(video, 0, 0);
+        if (video.videoWidth > video.videoHeight) {
+          canvas.width = Math.min(maxSize, video.videoWidth);
+          canvas.height = canvas.width / videoAspect;
+        } else {
+          canvas.height = Math.min(maxSize, video.videoHeight);
+          canvas.width = canvas.height * videoAspect;
+        }
+        
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
         const imageData = canvas.toDataURL('image/png');
+        console.log('Imagem capturada, tamanho:', imageData.length, 'chars');
         setCapturedImage(imageData);
         stopCamera();
       }
@@ -95,11 +138,19 @@ export function CameraCapture({ isOpen, onClose, onCapture, animalType }: Camera
         const ctx = canvas.getContext('2d');
         if (!ctx) return;
 
-        canvas.width = img.width;
-        canvas.height = img.height;
+        // Redimensionar para tamanho gerenciável
+        const maxSize = 512;
+        const aspect = img.width / img.height;
         
-        // Desenhar a imagem original
-        ctx.drawImage(img, 0, 0);
+        if (img.width > img.height) {
+          canvas.width = Math.min(maxSize, img.width);
+          canvas.height = canvas.width / aspect;
+        } else {
+          canvas.height = Math.min(maxSize, img.height);
+          canvas.width = canvas.height * aspect;
+        }
+        
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
         
         const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
         const data = imageData.data;
@@ -125,6 +176,7 @@ export function CameraCapture({ isOpen, onClose, onCapture, animalType }: Camera
         
         ctx.putImageData(imageData, 0, 0);
         const processedDataUrl = canvas.toDataURL('image/png');
+        console.log('Fundo removido, novo tamanho:', processedDataUrl.length, 'chars');
         setProcessedImage(processedDataUrl);
         setIsProcessing(false);
       };

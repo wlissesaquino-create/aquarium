@@ -70,7 +70,11 @@ function App() {
     try {
       // imageData agora é um objeto com image, name e type
       const animalData = JSON.parse(imageData);
-      console.log('Dados do animal da câmera:', animalData);
+      console.log('onCapture chamado:', { 
+        id: animalData.name, 
+        name: animalData.name, 
+        dataUrlLength: animalData.image ? animalData.image.length : 0 
+      });
       
       // Adicionar ao sistema de animais (para galeria e controle de tempo)
       addAnimal(animalData.type, animalData.name, animalData.image);
@@ -102,10 +106,16 @@ function App() {
         speed: (0.6 + Math.random() * 2.0) * (120 / size)
       };
       setFishList(prev => [...prev, newFish]);
+      console.log('pendingAdds push:', newFish.id);
     } catch (error) {
       console.error('Erro ao processar dados da câmera:', error);
       // Fallback: tratar como string simples
       const defaultName = 'Animal da Câmera';
+      console.log('onCapture fallback:', { 
+        id: defaultName, 
+        name: defaultName, 
+        dataUrlLength: imageData ? imageData.length : 0 
+      });
       addAnimal(selectedAnimalType, defaultName, imageData);
       
       const groundHeight = 120;
@@ -134,12 +144,17 @@ function App() {
         speed: (0.6 + Math.random() * 2.0) * (120 / size)
       };
       setFishList(prev => [...prev, newFish]);
+      console.log('pendingAdds push (fallback):', newFish.id);
     }
     setShowCamera(false);
   };
 
   const handleImageConfirm = async (name: string, processedImage: string) => {
-    console.log('Confirmando imagem:', { name, processedImage: processedImage.substring(0, 50) + '...' });
+    console.log('onCapture chamado:', { 
+      id: name, 
+      name: name, 
+      dataUrlLength: processedImage ? processedImage.length : 0 
+    });
     
     // Adicionar animal ao aquário
     addAnimal(selectedAnimalType, name, processedImage);
@@ -171,6 +186,7 @@ function App() {
       speed: (0.6 + Math.random() * 2.0) * (120 / size)
     };
     setFishList(prev => [...prev, newFish]);
+    console.log('pendingAdds push:', newFish.id);
     
     // Salvar imagem no dispositivo
     const success = await saveImageToDevice(
@@ -185,8 +201,6 @@ function App() {
     // Resetar estados
     setCapturedImage(null);
     setShowImageEditor(false);
-    
-    console.log('Peixe adicionado à lista:', newFish);
   };
 
   const handleCloseModals = () => {

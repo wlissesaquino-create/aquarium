@@ -2,27 +2,67 @@ import { useState, useEffect } from 'react';
 import { Animal, AnimalType } from '../types/Animal';
 
 const ANIMAL_LIFETIME = 5 * 60 * 1000; // 5 minutos
-const STORAGE_KEY = 'aquarium_animals';
+const STORAGE_KEY = 'aq_meta';
 
 export function useAnimals() {
   const [animals, setAnimals] = useState<Animal[]>([]);
 
-  // Carregar animais do localStorage na inicialização
+  // Carregar apenas metadados do localStorage na inicialização
   useEffect(() => {
-    const savedAnimals = localStorage.getItem(STORAGE_KEY);
-    if (savedAnimals) {
+    const savedMeta = localStorage.getItem(STORAGE_KEY);
+    if (savedMeta) {
       try {
-        const parsedAnimals = JSON.parse(savedAnimals);
-        setAnimals(parsedAnimals);
+        const parsedMeta = JSON.parse(savedMeta);
+        // Apenas metadados, sem imagens - imagens ficam em memória
+        const animalsFromMeta = parsedMeta.map((meta: any) => ({
+          ...meta,
+          image: null, // Imagens não persistem entre sessões
+          x: Math.random() < 0.5 ? -150 : window.innerWidth + 150,
+          y: getInitialY(meta.type),
+          baseY: 0,
+          direction: Math.random() < 0.5 ? 1 : -1,
+          speed: getSpeedForType(meta.type),
+          size: getSizeForType(meta.type),
+          phase: Math.random() * Math.PI * 2,
+          visible: true
+        }));
+        
+        // Filtrar animais expirados
+        const validAnimals = animalsFromMeta.filter((animal: Animal) => 
+          Date.now() - animal.birthTime < ANIMAL_LIFETIME
+        );
+        
+        setAnimals(validAnimals);
       } catch (error) {
-        console.error('Erro ao carregar animais do localStorage:', error);
+        console.error('Erro ao carregar metadados do localStorage:', error);
       }
     }
   }, []);
 
-  // Salvar animais no localStorage sempre que a lista mudar
+  // Salvar apenas metadados no localStorage sempre que a lista mudar
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(animals));
+    try {
+      const metas = animals.map(({id, name, type, birthTime}) => ({
+        id, name, type, birthTime
+      }));
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(metas));
+      console.log('Metadados salvos no localStorage:', metas.length, 'animais');
+    } catch (error) {
+      console.error('Erro ao salvar metadados no localStorage:', error);
+      // Se der quota exceeded, limpar localStorage antigo
+      if (error instanceof Error && error.name === 'QuotaExceededError') {
+        console.warn('QuotaExceededError detectado - limpando localStorage antigo');
+        localStorage.removeItem('aquarium_animals'); // Remove chave antiga se existir
+        try {
+          const metas = animals.map(({id, name, type, birthTime}) => ({
+            id, name, type, birthTime
+          }));
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(metas));
+        } catch (retryError) {
+          console.error('Falha ao salvar mesmo após limpeza:', retryError);
+        }
+      }
+    }
   }, [animals]);
 
   // Limpar animais expirados
@@ -43,7 +83,7 @@ export function useAnimals() {
       id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
       type,
       name: name.trim() || getDefaultName(type),
-      image,
+      image, // Imagem fica apenas em memória
       birthTime: Date.now(),
       x: Math.random() < 0.5 ? -150 : window.innerWidth + 150,
       y: getInitialY(type),

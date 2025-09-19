@@ -34,10 +34,19 @@ export function ImageEditor({ isOpen, onClose, imageData, animalType, onConfirm 
         const ctx = canvas.getContext('2d');
         if (!ctx) return;
 
-        canvas.width = img.width;
-        canvas.height = img.height;
+        // Redimensionar para tamanho gerenciável
+        const maxSize = 512;
+        const aspect = img.width / img.height;
         
-        ctx.drawImage(img, 0, 0);
+        if (img.width > img.height) {
+          canvas.width = Math.min(maxSize, img.width);
+          canvas.height = canvas.width / aspect;
+        } else {
+          canvas.height = Math.min(maxSize, img.height);
+          canvas.width = canvas.height * aspect;
+        }
+        
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
         
         const imageDataObj = ctx.getImageData(0, 0, canvas.width, canvas.height);
         const data = imageDataObj.data;
@@ -62,7 +71,9 @@ export function ImageEditor({ isOpen, onClose, imageData, animalType, onConfirm 
         }
         
         ctx.putImageData(imageDataObj, 0, 0);
-        setProcessedImage(canvas.toDataURL('image/png'));
+        const processedDataUrl = canvas.toDataURL('image/png');
+        console.log('Fundo removido no editor, tamanho:', processedDataUrl.length, 'chars');
+        setProcessedImage(processedDataUrl);
         setIsProcessing(false);
       };
       
